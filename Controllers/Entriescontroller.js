@@ -15,9 +15,7 @@ const Caseentries = async (req, res) => {
             nexthearing,
             factsheet,
             progressreport,
-            date, // Add date and proceedings to your request body
-            proceedings
-        } = req.body;
+        } = req.body
 
         if (!Suitno || !title || !nature || !prevhearing || !nexthearing || !factsheet || !progressreport) {
             return res.status(400).send({ Message: "Fill All the Fields" });
@@ -36,15 +34,16 @@ const Caseentries = async (req, res) => {
             prevhearing,
             nexthearing,
             factsheet,
-            progressreport
+            progressreport,
         });
 
-        const savedCaseEntry = await newCaseEntry.save();
-         
-        if(savedCaseEntry){
-            return res.status(200).send({Message: "Case Added Successfully"})
-        }else{
-            return res.status(400).send({Message: "Case Added Failed"})   
+        const savedCaseEntry = await newCaseEntry.save()
+        console.log('Case saved:', savedCaseEntry)
+
+        if (savedCaseEntry) {
+            return res.status(200).send({ Message: "Case Added Successfully" })
+        } else {
+            return res.status(400).send({ Message: "Case Added Failed" })
         }
     } catch (error) {
         console.error(error);
@@ -165,7 +164,7 @@ const GetTodayEntries = async (req, res) => {
 const Factsheetcontroller = async (req, res) => {
     try {
         const { caseentryId } = req.params;
-    
+
         // Check if the Caseentry with the given ID exists
         const caseentry = await Caseentryschema.findById(caseentryId);
         if (!caseentry) return res.status(404).send('The Caseentry with the given ID was not found.');
@@ -176,7 +175,7 @@ const Factsheetcontroller = async (req, res) => {
 
         // Save the factsheet
         await factsheet.save();
-    
+
         res.send(factsheet);
     } catch (error) {
         res.status(500).send(error.message);
@@ -189,7 +188,7 @@ const Factsheetcontroller = async (req, res) => {
 const getFactsheetByCaseentryId = async (req, res) => {
     try {
         const { caseentryId } = req.params;
-        
+
         // Find all the Factsheets that reference the provided Caseentry ID
         const factsheets = await Factsheet.find({ caseentry: caseentryId })
         // .populate('caseentry');
@@ -208,5 +207,5 @@ const getFactsheetByCaseentryId = async (req, res) => {
 
 
 
-module.exports = { Caseentries, Getentries, updateschema, Gethistory , Getentriesonthebaseofid, GetTodayEntries  , Factsheetcontroller ,getFactsheetByCaseentryId}
+module.exports = { Caseentries, Getentries, updateschema, Gethistory, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
 

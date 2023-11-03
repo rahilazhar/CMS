@@ -26,10 +26,6 @@ const Caseentries = new mongoose.Schema(
             type: String,
             required: true
         },
-        factsheetdes: {
-            type: String,
-
-        },
         progressreport: {
             type: String,
             required: true
