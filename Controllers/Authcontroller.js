@@ -39,10 +39,12 @@ const logincontroller = async (req, res) => {
     const token = JWT.sign({ _id: checkuser._id, role: checkuser.role }, process.env.JWT_Key, { expiresIn: '7d' });
 
     if (compare) {
-        return res.send({ Message: "Login Successfull", email, role: checkuser.role, id: checkuser._id, name: checkuser.name, token })
+        return res.send({ Message: "Login Successfull", email, role: checkuser.role, id: checkuser._id, name: checkuser.name, token });
     } else {
-        return res.send({ Message: "Login Failed" })
+        // Send a 401 Unauthorized status code for a failed login
+        return res.status(401).send({ Message: "Login Failed" });
     }
+    
 }
 
 
