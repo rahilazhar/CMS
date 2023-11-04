@@ -1,10 +1,15 @@
 const express = require('express')
 const { Caseentries, Getentries, updateschema, deleteHistoryEntry, Gethistory, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId, Getentriesonthebaseofid } = require('../Controllers/Entriescontroller')
+const {UserRegistration, logincontroller}  = require('../Controllers/Authcontroller')
 
 
 
 
 const router = express.Router()
+
+// Auth controllers
+router.post('/registration' , UserRegistration )
+router.post('/login' , logincontroller )
 
 // Case Routes
 router.post('/entries', Caseentries)
