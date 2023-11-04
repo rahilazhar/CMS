@@ -120,6 +120,59 @@ const updateschema = async (req, res) => {
     }
 };
 
+// Delete 
+const deleteHistoryEntry = async (req, res) => {
+    try {
+        const { caseId, historyId } = req.params; // Assuming you pass these as URL parameters
+
+        // Find the document and pull the history object with the specified _id
+        const updatedCaseEntry = await Caseentryschema.findByIdAndUpdate(
+            caseId,
+            {
+                $pull: {
+                    history: { _id: historyId } // Using $pull to remove the history with specific _id
+                }
+            },
+            { new: true } // Option to return the modified document
+        );
+
+        if (!updatedCaseEntry) {
+            return res.status(404).send({ Message: "Case Entry not found or History ID not found" });
+        }
+
+        return res.status(200).send({ Message: "History deleted successfully", data: updatedCaseEntry });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ Message: "Internal Server Error" });
+    }
+};
+
+
+
+
+
+// const deleteHistoryEntry = async (req, res) => {
+//     try {
+//         const { id } = req.params; // ID of the case entry to be deleted
+
+//         // Attempt to find and delete the case entry by its ID
+//         const deletedCaseEntry = await Caseentryschema.findByIdAndDelete(id);
+
+//         // If no document was found, return a 404 error
+//         if (!deletedCaseEntry) {
+//             return res.status(404).send({ Message: "Case Entry not found" });
+//         }
+
+//         // If the delete operation was successful, send back a success message
+//         return res.status(200).send({ Message: "Case Entry deleted successfully" });
+
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).send({ Message: "Internal Server Error" });
+//     }
+// };
+
+
 
 const Gethistory = async (req, res) => {
     try {
@@ -207,5 +260,5 @@ const getFactsheetByCaseentryId = async (req, res) => {
 
 
 
-module.exports = { Caseentries, Getentries, updateschema, Gethistory, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
+module.exports = { Caseentries, Getentries, updateschema, Gethistory, deleteHistoryEntry ,  Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
 
