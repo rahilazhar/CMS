@@ -4,7 +4,7 @@ const {UserRegistration, logincontroller}  = require('../Controllers/Authcontrol
 
 
 
-
+// ok
 const router = express.Router()
 
 // Auth controllers
