@@ -51,6 +51,25 @@ const Caseentries = async (req, res) => {
     }
 };
 
+const deleteCaseEntry = async (req, res) => {
+    try {
+        const { id } = req.params; // Get the id from the request parameters
+
+        // Attempt to delete the case entry using the id
+        const result = await Caseentryschema.findByIdAndDelete(id);
+
+        if (!result) {
+            return res.status(404).send({ Message: "Case not found" });
+        }
+
+        return res.status(200).send({ Message: "Case deleted successfully" });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({ Message: "Internal Server Error" });
+    }
+};
+
+
 
 
 
@@ -255,10 +274,64 @@ const getFactsheetByCaseentryId = async (req, res) => {
     }
 };
 
+// Edit Factsheet
+const updateFactsheetByCaseentryId = async (req, res) => {
+    try {
+        const { caseentryId } = req.params;
+        const updateData = req.body; // Assuming all the updated data is passed in the request body
+
+        // Find the Factsheet by Caseentry ID and update it
+        // The {new: true} option ensures that the updated document is returned
+        const updatedFactsheet = await Factsheet.findOneAndUpdate(
+            { caseentry: caseentryId },
+            updateData,
+            { new: true }
+        ).exec();
+
+        if (!updatedFactsheet) {
+            return res.status(404).send('No Factsheet found with the provided Caseentry ID');
+        }
+
+        res.json(updatedFactsheet);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+};
+
+// const updateFactsheetByCaseentryId = async (req, res) => {
+//     // Assuming you're receiving the update data in the request body as JSON and using body-parser or Express built-in parser to parse JSON bodies.
+//     const updateData = req.body; // Make sure to have the updated data in the body.
+
+//     try {
+//         let result = await Factsheet.updateOne(
+//             { _id: req.params.id },
+//             updateData,
+//             { upsert: true }
+//         );
+//         res.send(result);
+//     } catch (error) {
+//         // Make sure to handle errors properly.
+//         res.status(500).send(error);
+//     }
+// };
+
+
+const Factsheetget = async (req, res) => {
+    let result = await Factsheet.findOne({ _id: req.params.id });
+
+    if (result) {
+        res.send(result)
+    } else {
+        res.send({ msg: "No record found" })
+    }
+}
 
 
 
 
 
-module.exports = { Caseentries, Getentries, updateschema, Gethistory, deleteHistoryEntry ,  Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
+
+
+
+module.exports = { Caseentries, Getentries, updateFactsheetByCaseentryId, Factsheetget, deleteCaseEntry,updateschema, Gethistory, deleteHistoryEntry, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
 
