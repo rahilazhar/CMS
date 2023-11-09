@@ -5,6 +5,7 @@ const Factsheet = require('../Models/Factsheetschema');
 
 
 
+
 const Caseentries = async (req, res) => {
     try {
         const {
@@ -316,15 +317,56 @@ const updateFactsheetByCaseentryId = async (req, res) => {
 // };
 
 
-const Factsheetget = async (req, res) => {
-    let result = await Factsheet.findOne({ _id: req.params.id });
-
-    if (result) {
-        res.send(result)
-    } else {
-        res.send({ msg: "No record found" })
+// const gettodayhearings = async (req, res) => {
+//     try {
+//       // Get the current UTC date
+//       const currentDate = new Date();
+//       currentDate.setUTCHours(0, 0, 0, 0); // Set time to midnight in UTC timezone
+  
+//       const isoDate = currentDate.toISOString().split('T')[0];
+//       console.log('UTC Date:', isoDate);
+  
+//       // Find all case entries with nexthearing dates matching today's date
+//       const todayHearings = await Caseentryschema.find({
+//         nexthearing: isoDate,
+//       });
+//       console.log('Today Hearings:', todayHearings);
+  
+//       res.json(todayHearings);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ error: 'An error occurred' });
+//     }
+//   };
+  
+const gettodayhearings = async (req, res) => {
+    try {
+      // Get the current UTC date
+      const currentDate = new Date();
+      currentDate.setUTCHours(0, 0, 0, 0); // Set time to midnight in UTC timezone
+  
+      // Extract year, month, and day components
+      const year = currentDate.getUTCFullYear();
+      const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+      const day = String(currentDate.getUTCDate()).padStart(2, '0');
+  
+      // Create the date string in "yyyy-mm-dd" format
+      const dateStr = `${year}-${month}-${day}`;
+      console.log('Date:', dateStr);
+  
+      // Find all case entries with nexthearing dates matching today's date
+      const todayHearings = await Caseentryschema.find({
+        nexthearing: dateStr,
+      });
+      console.log('Today Hearings:', todayHearings);
+  
+      res.json(todayHearings);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred' });
     }
-}
+  };
+  
 
 
 
@@ -333,5 +375,12 @@ const Factsheetget = async (req, res) => {
 
 
 
-module.exports = { Caseentries, Getentries, updateFactsheetByCaseentryId, Factsheetget, deleteCaseEntry,updateschema, Gethistory, deleteHistoryEntry, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
+
+
+
+
+
+
+
+module.exports = { Caseentries, Getentries, gettodayhearings, updateFactsheetByCaseentryId, deleteCaseEntry, updateschema, Gethistory, deleteHistoryEntry, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
 
