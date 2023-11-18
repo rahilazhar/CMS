@@ -30,6 +30,15 @@ const Caseentries = new mongoose.Schema(
             type: String,
             required: true
         },
+
+        isEditApproved: {
+            type: Boolean,
+            default: false
+        },
+
+       
+       
+        
         history: [ // Initialize history as an empty array
             {
                 date: String,

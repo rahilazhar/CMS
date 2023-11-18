@@ -1,5 +1,7 @@
 const Caseentryschema = require('../Models/Caseentryschema');
 const Factsheet = require('../Models/Factsheetschema');
+const EditRequest = require('../Models/EditrequestSchema')
+const Userschema = require('../Models/Userschema')
 
 
 
@@ -76,15 +78,43 @@ const deleteCaseEntry = async (req, res) => {
 
 // Get Entries Controller
 
-const Getentries = async (req, res) => {
-    const Findentries = await Caseentryschema.find()
+// const Getentries = async (req, res) => {
+//     const Findentries = await Caseentryschema.find()
 
-    if (Findentries.length > 0) {
-        return res.status(200).send(Findentries)
+//     if (Findentries.length > 0) {
+//         return res.status(200).send(Findentries)
+//     } else {
+//         return res.status(401).send({ Message: "No Case Found" })
+//     }
+// }
+
+const Getentries = async (req, res) => {
+    // Check if an ID is provided in the request
+    const entryId = req.params.id;
+
+    if (entryId) {
+        // Find entry by ID
+        try {
+            const entry = await Caseentryschema.findById(entryId);
+            if (entry) {
+                return res.status(200).send(entry);
+            } else {
+                return res.status(404).send({ Message: "Entry Not Found" });
+            }
+        } catch (error) {
+            // Handle possible errors, like invalid MongoDB ID format
+            return res.status(400).send({ Message: "Invalid ID Format" });
+        }
     } else {
-        return res.status(401).send({ Message: "No Case Found" })
+        // Find all entries if no ID is provided
+        const Findentries = await Caseentryschema.find();
+        if (Findentries.length > 0) {
+            return res.status(200).send(Findentries);
+        } else {
+            return res.status(401).send({ Message: "No Cases Found" });
+        }
     }
-}
+};
 
 
 const Getentriesonthebaseofid = async (req, res) => {
@@ -322,51 +352,349 @@ const updateFactsheetByCaseentryId = async (req, res) => {
 //       // Get the current UTC date
 //       const currentDate = new Date();
 //       currentDate.setUTCHours(0, 0, 0, 0); // Set time to midnight in UTC timezone
-  
+
 //       const isoDate = currentDate.toISOString().split('T')[0];
 //       console.log('UTC Date:', isoDate);
-  
+
 //       // Find all case entries with nexthearing dates matching today's date
 //       const todayHearings = await Caseentryschema.find({
 //         nexthearing: isoDate,
 //       });
 //       console.log('Today Hearings:', todayHearings);
-  
+
 //       res.json(todayHearings);
 //     } catch (err) {
 //       console.error(err);
 //       res.status(500).json({ error: 'An error occurred' });
 //     }
 //   };
-  
+
 const gettodayhearings = async (req, res) => {
     try {
-      // Get the current UTC date
-      const currentDate = new Date();
-      currentDate.setUTCHours(0, 0, 0, 0); // Set time to midnight in UTC timezone
-  
-      // Extract year, month, and day components
-      const year = currentDate.getUTCFullYear();
-      const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
-      const day = String(currentDate.getUTCDate()).padStart(2, '0');
-  
-      // Create the date string in "yyyy-mm-dd" format
-      const dateStr = `${year}-${month}-${day}`;
-      console.log('Date:', dateStr);
-  
-      // Find all case entries with nexthearing dates matching today's date
-      const todayHearings = await Caseentryschema.find({
-        nexthearing: dateStr,
-      });
-      console.log('Today Hearings:', todayHearings);
-  
-      res.json(todayHearings);
+        // Get the current UTC date
+        const currentDate = new Date();
+        currentDate.setUTCHours(0, 0, 0, 0); // Set time to midnight in UTC timezone
+
+        // Extract year, month, and day components
+        const year = currentDate.getUTCFullYear();
+        const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(currentDate.getUTCDate()).padStart(2, '0');
+
+        // Create the date string in "yyyy-mm-dd" format
+        const dateStr = `${year}-${month}-${day}`;
+        console.log('Date:', dateStr);
+
+        // Find all case entries with nexthearing dates matching today's date
+        const todayHearings = await Caseentryschema.find({
+            nexthearing: dateStr,
+        });
+        console.log('Today Hearings:', todayHearings);
+
+        res.json(todayHearings);
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'An error occurred' });
+        console.error(err);
+        res.status(500).json({ error: 'An error occurred' });
     }
-  };
-  
+};
+
+// one time allow user code 
+// const Editallentries = async(req , res) => {
+//     const { id } = req.params;
+// const updateData = req.body;
+
+// try {
+//     // Check if edit is approved
+//     const caseEntry = await Caseentryschema.findById(id);
+
+//     if (!caseEntry.isEditApproved) {
+//         return res.status(403).send({ message: "Edit not approved by admin" });
+//     }
+
+//     // Proceed with edit
+//     const updatedEntry = await Caseentryschema.findByIdAndUpdate(id, updateData, { new: true });
+//     res.status(200).send(updatedEntry);
+// } catch (error) {
+//     res.status(500).send({ message: "Error updating the case entry", error: error.message });
+// }
+// }
+
+
+// this code is for one time allow and user can edit multiple times to edit
+// const Editallentries = async (req, res) => {
+//     const { id } = req.params;
+//     const updateData = req.body;
+
+//     try {
+//         // Find the case entry
+//         const caseEntry = await Caseentryschema.findById(id);
+
+//         // Check if the edit is approved
+//         if (!caseEntry.isEditApproved) {
+//             return res.status(403).send({ message: "Edit not approved by admin" });
+//         }
+
+//         // If edit is approved, check the status of the edit request
+//         const editRequest = await EditRequest.findOne({ caseId: id });
+
+//         if (!editRequest) {
+//             return res.status(404).send({ message: "Edit request not found" });
+//         }
+
+//         if (editRequest.status === 'approved') {
+//             // If status is approved, proceed with edit
+//             const updatedEntry = await Caseentryschema.findByIdAndUpdate(id, updateData, { new: true });
+//             res.status(200).send(updatedEntry);
+//         } else if (editRequest.status === 'rejected') {
+//             // If status is rejected, show "Your request is rejected"
+//             res.status(403).send({ message: "Your request is rejected" });
+//         } else {
+//             // If status is not approved (rejected or pending), show "You are not Authorized to edit"
+//             res.status(403).send({ message: "You are not Authorized to edit" });
+//         }
+//     } catch (error) {
+//         res.status(500).send({ message: "Error updating the case entry", error: error.message });
+//     }
+// }
+
+
+// this code is allow only one time to allow user to edit 
+const Editallentries = async (req, res) => {
+    const { id } = req.params; // Case ID
+    const updateData = req.body;
+    const userId = req.user.id; // User ID from JWT token
+
+    try {
+        const caseEntry = await Caseentryschema.findById(id);
+
+        // Find the user based on the ID from JWT token
+        const approvedUser = await Userschema.findById(userId);
+
+        if (!approvedUser) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        if (approvedUser.isUserApproved) {
+            // Update all entries if the user is approved
+            const updatedEntry = await Caseentryschema.updateMany({ _id: id }, updateData, { new: true });
+            return res.status(200).send({ Message: "Successfully Updated", updatedEntry });
+        }
+
+        // Check if this specific entry is approved for editing
+        if (caseEntry.isEditApproved) {
+            const updatedEntry = await Caseentryschema.findByIdAndUpdate(id, updateData, { new: true });
+            caseEntry.isEditApproved = false;
+            await caseEntry.save();
+            return res.status(200).send({ Message: "Successfully Updated", updatedEntry });
+        } else {
+            return res.status(403).send({ message: "Edit not approved by admin" });
+        }
+    } catch (error) {
+        res.status(500).send({ message: "Error updating the case entry", error: error.message });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+// Request to admin for edit case Permisssion
+
+const RequestEdit = async (req, res) => {
+    const { id } = req.params; // Case ID
+    const userId = req.user.id; // User ID
+
+    try {
+        // Check if there is an existing edit request for the same case and user
+        const existingRequest = await EditRequest.findOne({ caseId: id, userId: userId });
+
+        if (existingRequest) {
+            return res.status(400).send({ message: "Edit request for this case already exists" });
+        }
+
+        // If no existing request, create a new edit request
+        const newEditRequest = new EditRequest({
+            caseId: id,
+            userId: userId
+        });
+
+        await newEditRequest.save();
+
+        // Fetch user details
+        const user = await Userschema.findById(userId);
+
+        // Fetch case details
+        const caseEntry = await Caseentryschema.findById(id);
+
+        // Check if user and case entry exist
+        if (!user || !caseEntry) {
+            return res.status(404).send({ message: "User or Case not found" });
+        }
+
+        // Send response with user name and case details
+        res.status(200).send({
+            message: "Your request is submitted",
+            requestDetails: {
+                userName: user.name,
+                caseTitle: caseEntry.title,
+                caseNature: caseEntry.nature,
+                editRequest: newEditRequest
+            }
+        });
+    } catch (error) {
+        res.status(500).send({ message: "Error submitting edit request", error: error.message });
+    }
+}
+
+
+
+
+
+
+
+
+
+const Approvedrequest = async (req, res) => {
+    const { userId } = req.user.id; // Assuming you pass the user ID
+
+    try {
+        // Find all case entries by user and set isUserApproved to true
+        await Caseentryschema.updateMany({ userId: userId }, { $set: { isUserApproved: true } });
+
+        res.status(200).send({ message: "User approved for editing" });
+    } catch (error) {
+        res.status(500).send({ message: "Error approving user", error: error.message });
+    }
+}
+
+
+
+const ListPendingEditRequests = async (req, res) => {
+    try {
+        const pendingRequests = await EditRequest.find({ status: 'pending' }).populate('caseId').populate('userId', 'name');
+        res.status(200).send(pendingRequests);
+    } catch (error) {
+        res.status(500).send({ message: "Error retrieving pending requests", error: error.message });
+    }
+}
+
+
+// const UpdateRequestStatus = async (req, res) => {
+//     const { id } = req.params; // This is the Case ID
+//     const { status } = req.body; // Status to be updated: 'approved' or 'rejected'
+
+//     if (!['approved', 'rejected'].includes(status)) {
+//         return res.status(400).send({ message: "Invalid status update" });
+//     }
+
+//     try {
+//         // Find the edit request by case ID and status 'pending'
+//         const editRequest = await EditRequest.findOne({ caseId: id, status: 'pending' });
+
+
+
+//         if (!editRequest) {
+//             return res.status(404).send({ message: "No pending edit request found for this case" });
+//         }
+
+
+
+//         // Update the status to either 'approved' or 'rejected'
+//         editRequest.status = status;
+//         await editRequest.save();
+
+
+
+//         res.status(200).send({ message: `Edit request for the case ${status}`, editRequest });
+//     } catch (error) {
+//         res.status(500).send({ message: `Error updating edit request status`, error: error.message });
+//     }
+// };
+
+
+// const UpdateRequestStatus = async (req, res) => {
+//     const { id } = req.params; // This is the Case ID
+//     const { status } = req.body; // Status to be updated: 'approved' or 'rejected'
+
+//     if (!['approved', 'rejected'].includes(status)) {
+//         return res.status(400).send({ message: "Invalid status update" });
+//     }
+
+//     try {
+//         // Find the edit request by case ID and status 'pending'
+//         const editRequest = await EditRequest.findOne({ caseId: id, status: 'pending' });
+
+//         if (!editRequest) {
+//             return res.status(404).send({ message: "No pending edit request found for this case" });
+//         }
+
+//         // Update the status to either 'approved' or 'rejected'
+//         editRequest.status = status;
+//         await editRequest.save();
+
+//         // if (status === 'rejected') {
+//         //     // If the status is 'rejected', remove the document from the collection
+//         //     await EditRequest.deleteOne({ _id: editRequest._id });
+//         // }
+
+//         res.status(200).send({ message: `Edit request for the case ${status}`, editRequest });
+//     } catch (error) {
+//         res.status(500).send({ message: `Error updating edit request status`, error: error.message });
+//     }
+// };
+
+const UpdateRequestStatus = async (req, res) => {
+    const { id } = req.params; // This is the Case ID
+    const { status } = req.body; // Status to be updated: 'approved' or 'rejected'
+
+    if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).send({ message: "Invalid status update" });
+    }
+
+    try {
+        // Find the edit request by case ID and status 'pending'
+        const editRequest = await EditRequest.findOne({ caseId: id, status: 'pending' });
+
+        if (!editRequest) {
+            return res.status(404).send({ message: "No pending edit request found for this case" });
+        }
+
+        // Update the status of the edit request
+        editRequest.status = status;
+        await editRequest.save();
+
+        // Find the case entry
+        const caseEntry = await Caseentryschema.findById(id);
+
+        if (!caseEntry) {
+            return res.status(404).send({ message: "Case not found" });
+        }
+
+        // Update isEditApproved based on the status
+        if (status === 'approved') {
+            caseEntry.isEditApproved = true;
+        } else {
+            caseEntry.isEditApproved = false;
+        }
+
+
+        await caseEntry.save();
+        if (status === 'rejected' || "'approved") {
+            // If the status is 'rejected', remove the document from the collection
+            await EditRequest.deleteOne({ _id: editRequest._id });
+        }
+
+        editRequest
+
+        res.status(200).send({ message: `Edit request for the case has been ${status}`, editRequest, caseEntry });
+    } catch (error) {
+        res.status(500).send({ message: `Error updating edit request status`, error: error.message });
+    }
+};
 
 
 
@@ -378,9 +706,5 @@ const gettodayhearings = async (req, res) => {
 
 
 
-
-
-
-
-module.exports = { Caseentries, Getentries, gettodayhearings, updateFactsheetByCaseentryId, deleteCaseEntry, updateschema, Gethistory, deleteHistoryEntry, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
+module.exports = { Caseentries, Getentries, UpdateRequestStatus, RequestEdit, ListPendingEditRequests, Approvedrequest, Editallentries, gettodayhearings, updateFactsheetByCaseentryId, deleteCaseEntry, updateschema, Gethistory, deleteHistoryEntry, Getentriesonthebaseofid, GetTodayEntries, Factsheetcontroller, getFactsheetByCaseentryId }
 
