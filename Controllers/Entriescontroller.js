@@ -558,18 +558,35 @@ const RequestEdit = async (req, res) => {
 
 
 
+// const Approvedrequest = async (req, res) => {
+//     const { userId } = req.user.id; // Assuming you pass the user ID
+
+//     try {
+//         // Find all case entries by user and set isUserApproved to true
+//         await Caseentryschema.updateMany({ userId: userId }, { $set: { isUserApproved: true } });
+
+//         res.status(200).send({ message: "User approved for editing" });
+//     } catch (error) {
+//         res.status(500).send({ message: "Error approving user", error: error.message });
+//     }
+// }
+
 const Approvedrequest = async (req, res) => {
-    const { userId } = req.user.id; // Assuming you pass the user ID
-
     try {
-        // Find all case entries by user and set isUserApproved to true
-        await Caseentryschema.updateMany({ userId: userId }, { $set: { isUserApproved: true } });
+        // Assuming the user ID is passed as a parameter in the URL, e.g., /users/:userId
+        const userId = req.params.userId;
 
-        res.status(200).send({ message: "User approved for editing" });
+        // Update the isUserApproved field for the user with the given ID
+        await Userschema.updateOne({ _id: userId }, { $set: { isUserApproved: req.body.isUserApproved } });
+
+        res.status(200).send({ message: "User approval status updated" });
     } catch (error) {
-        res.status(500).send({ message: "Error approving user", error: error.message });
+        res.status(500).send({ message: "Error updating user approval status", error: error.message });
     }
 }
+
+
+
 
 
 

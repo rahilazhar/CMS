@@ -58,7 +58,8 @@ const logincontroller = async (req, res) => {
             return res.status(400).send('Invalid credentials');
         }
 
-        const token = JWT.sign({ id: user._id }, process.env.JWT_Key, { expiresIn: '1h' }); // Replace 'your_jwt_secret' with a real secret key
+        const token = JWT.sign({ id: user._id }, process.env.JWT_Key, { expiresIn: '7d' });
+        // Replace 'your_jwt_secret' with a real secret key
 
         res.status(200).json({ token ,  role:user.role , email:user.email });
     } catch (error) {
